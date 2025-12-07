@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CBum 訓練菜單 (純閱覽版)</title>
+    <style>
+        :root {
+            --primary: #c5a059; /* CBum 金色 */
+            --bg: #121212;
+            --card-bg: #1e1e1e;
+            --text: #e0e0e0;
+            --secondary-text: #a0a0a0;
+            --yt-red: #ff0000;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            padding-bottom: 40px;
+        }
+
+        header {
+            background-color: #000;
+            padding: 20px 15px;
+            text-align: center;
+            border-bottom: 2px solid var(--primary);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        h1 { margin: 0; font-size: 1.4rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+        p.subtitle { margin: 5px 0 0; font-size: 0.8rem; color: var(--secondary-text); }
+
+        /* Navigation Tabs */
+        .nav-scroller {
+            overflow-x: auto;
+            white-space: nowrap;
+            background: #1a1a1a;
+            padding: 12px 10px;
+            -webkit-overflow-scrolling: touch;
+            border-bottom: 1px solid #333;
+        }
+
+        .nav-btn {
+            background: none;
+            border: 1px solid #444;
+            color: var(--secondary-text);
+            padding: 8px 14px;
+            margin-right: 8px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .nav-btn.active {
+            background-color: var(--primary);
+            color: #000;
+            border-color: var(--primary);
+            font-weight: 700;
+            box-shadow: 0 0 8px rgba(197, 160, 89, 0.4);
+        }
+
+        .nav-btn.rest-day {
+            border-style: dashed;
+            opacity: 0.8;
+        }
+
+        /* Content Area */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        .day-title {
+            text-align: center;
+            margin: 25px 0 15px;
+            font-size: 1.3rem;
+            color: #fff;
+            border-left: 4px solid var(--primary);
+            padding-left: 10px;
+            display: inline-block;
+        }
+        
+        .day-header-container { text-align: center; }
+
+        /* Exercise Card */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            border: 1px solid #333;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 15px 15px 10px 15px;
+            background: #252525;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
+        .header-info {
+            flex: 1;
+            padding-right: 10px;
+        }
+
+        .ex-name { 
+            display: block;
+            font-weight: 700; 
+            font-size: 1.15rem; 
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .ex-sets {
+            display: inline-block;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.95rem;
+            background: rgba(197, 160, 89, 0.15);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        
+        .yt-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #2a2a2a;
+            color: var(--yt-red);
+            text-decoration: none;
+            font-size: 0.7rem;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            transition: 0.2s;
+            min-width: 50px;
+        }
+        
+        .yt-btn span { font-size: 1.2rem; margin-bottom: 2px; }
+        
+        .yt-btn:active {
+            background-color: #333;
+            transform: scale(0.95);
+        }
+
+        .card-body { padding: 15px; }
+
+        .desc-box {
+            font-size: 0.95rem;
+            color: #ccc;
+            line-height: 1.5;
+        }
+        
+        .desc-label {
+            color: #777;
+            font-size: 0.75rem;
+            display: block;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Rest Day Display */
+        .rest-display {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--secondary-text);
+            border: 2px dashed #333;
+            border-radius: 20px;
+            margin-top: 20px;
+        }
+        .rest-display h2 { font-size: 2.5rem; color: #fff; margin-bottom: 15px; }
+        .rest-display p { font-size: 1.1rem; line-height: 1.6; }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>CBum 訓練菜單</h1>
+    <p class="subtitle">5x Mr. Olympia Workout Routine</p>
+</header>
+
+<div class="nav-scroller" id="navContainer">
+    </div>
+
+<div class="container" id="contentArea">
+    </div>
+
+<script>
+    // 訓練資料庫
+    const workoutData = {
+        1: {
+            title: "Day 1: 腿部 (股四頭肌)",
+            exercises: [
+                { id: "d1_1", name: "槓鈴深蹲 (Squats)", sets: "4組 x 8-10下", desc: "下蹲深度至少大腿平行地面，重心穩定，專注於股四頭肌發力推起。", yt: "Barbell Squat form tutorial" },
+                { id: "d1_2", name: "腿推舉 (Leg Press)", sets: "4組 x 10-12下", desc: "腳位略低於踏板中心。下放膝蓋近胸，推起不鎖死膝蓋。", yt: "Leg Press proper form" },
+                { id: "d1_3", name: "保加利亞分腿蹲 (Split Squats)", sets: "3組 x 10-12下/腿", desc: "後腳墊高，軀幹保持直立，重心在前腳，集中刺激股四頭。", yt: "Bulgarian Split Squat form" },
+                { id: "d1_4", name: "坐姿腿屈伸 (Leg Extensions)", sets: "4組 x 12-15下", desc: "踢到最高點停頓1秒，感受股四頭肌完全收縮，不要甩。", yt: "Leg Extensions proper form" },
+                { id: "d1_5", name: "提踵 (Calf Raises)", sets: "4組 x 15-20下", desc: "動作要慢！最低點拉伸，最高點用力收縮。", yt: "Standing Calf Raise form" }
+            ]
+        },
+        2: {
+            title: "Day 2: 胸部 & 三頭肌",
+            exercises: [
+                { id: "d2_1", name: "槓鈴臥推 (Bench Press)", sets: "4組 x 8-10下", desc: "肩胛後收下壓，手肘與身體呈45-75度，觸胸後推起。", yt: "Bench Press proper form" },
+                { id: "d2_2", name: "上斜啞鈴臥推 (Incline DB Press)", sets: "4組 x 10-12下", desc: "針對上胸，椅子30-45度，下放時充分拉伸胸肌。", yt: "Incline Dumbbell Press form" },
+                { id: "d2_3", name: "繩索夾胸 (Cable Flyes)", sets: "3組 x 12-15下", desc: "手肘微彎固定角度，像抱樹一樣，專注胸肌內側擠壓。", yt: "Cable Chest Fly form" },
+                { id: "d2_4", name: "雙槓臂屈伸 (Dips)", sets: "3組 x 10-12下", desc: "身體保持直立(側重三頭)，手肘向後夾緊身體。", yt: "Tricep Dips form" },
+                { id: "d2_5", name: "滑輪三頭下壓 (Pushdowns)", sets: "4組 x 12-15下", desc: "大臂夾緊身體不動，僅前臂移動，下壓到底鎖死三頭。", yt: "Tricep Pushdown proper form" }
+            ]
+        },
+        3: {
+            title: "Day 3: 背部 & 二頭肌",
+            exercises: [
+                { id: "d3_1", name: "傳統硬舉 (Deadlifts)", sets: "4組 x 6-8下", desc: "脊椎中立，槓鈴貼腿，利用髖關節鉸鏈驅動。", yt: "Conventional Deadlift form" },
+                { id: "d3_2", name: "滑輪下拉 (Lat Pulldown)", sets: "4組 x 10-12下", desc: "挺胸，想像用手肘去撞擊側腹部，不要聳肩。", yt: "Lat Pulldown proper form" },
+                { id: "d3_3", name: "槓鈴划船 (Barbell Rows)", sets: "4組 x 8-10下", desc: "軀幹前傾，背部打直，將槓鈴拉向肚臍，夾緊肩胛。", yt: "Barbell Row form" },
+                { id: "d3_4", name: "坐姿繩索划船 (Cable Rows)", sets: "3組 x 10-12下", desc: "核心穩定不後仰，拉回時專注擠壓中背部。", yt: "Seated Cable Row form" },
+                { id: "d3_5", name: "槓鈴彎舉 (Barbell Curls)", sets: "3組 x 12-15下", desc: "大臂固定在身體兩側，不要藉助腰部擺動借力。", yt: "Barbell Curl proper form" }
+            ]
+        },
+        4: {
+            title: "Day 4: 休息日 (Rest Day)",
+            isRest: true
+        },
+        5: {
+            title: "Day 5: 肩部 & 胸部",
+            exercises: [
+                { id: "d5_1", name: "站姿槓鈴肩推 (Overhead Press)", sets: "4組 x 8-10下", desc: "核心收緊，槓鈴直線上下，推至頭頂時頭略微前伸。", yt: "Overhead Press form" },
+                { id: "d5_2", name: "啞鈴側平舉 (Lateral Raises)", sets: "4組 x 12-15下", desc: "針對中三角，手肘微彎，像倒水一樣舉至水平。", yt: "Dumbbell Lateral Raise form" },
+                { id: "d5_3", name: "反向飛鳥 (Rear Delt Flyes)", sets: "4組 x 12-15下", desc: "針對後三角，手背向後畫圓打開，不要過度夾背。", yt: "Rear Delt Fly form" },
+                { id: "d5_4", name: "啞鈴臥推 (DB Chest Press)", sets: "3組 x 10-12下", desc: "輔助胸部訓練，重量適中，強調肌肉感受度(Pump)。", yt: "Dumbbell Bench Press form" },
+                { id: "d5_5", name: "繩索側平舉 (Cable Lateral Raises)", sets: "3組 x 12-15下", desc: "利用繩索持續張力，補強中三角肌的力竭感。", yt: "Cable Lateral Raise form" }
+            ]
+        },
+        6: {
+            title: "Day 6: 腿後側 & 背部",
+            exercises: [
+                { id: "d6_1", name: "羅馬尼亞硬舉 (RDL)", sets: "4組 x 8-10下", desc: "膝蓋微彎鎖定，屁股向後推，感受腿後側強烈拉伸。", yt: "Romanian Deadlift RDL form" },
+                { id: "d6_2", name: "腿後勾 (Hamstring Curls)", sets: "4組 x 12-15下", desc: "專注於用大腿後側將重量勾回，回放時要慢。", yt: "Lying Leg Curl form" },
+                { id: "d6_3", name: "弓箭步 (Lunges)", sets: "3組 x 10-12下", desc: "步伐跨大一點可以更多刺激臀部與腿後側。", yt: "Walking Lunges form" },
+                { id: "d6_4", name: "引體向上 (Pull-Ups)", sets: "3組 x 8-10下", desc: "拉起時下巴過槓，專注於背闊肌的收縮。", yt: "Pull Up proper form" },
+                { id: "d6_5", name: "T槓划船 (T-Bar Rows)", sets: "3組 x 10-12下", desc: "增加中背厚度，身體前傾角度固定。", yt: "T-Bar Row form" }
+            ]
+        },
+        7: {
+            title: "Day 7: 手臂 (二頭 & 三頭)",
+            exercises: [
+                { id: "d7_1", name: "槓鈴彎舉 (Barbell Curls)", sets: "4組 x 8-10下", desc: "大重量基礎動作，保持離心控制。", yt: "Barbell Curl form" },
+                { id: "d7_2", name: "垂式彎舉 (Hammer Curls)", sets: "4組 x 10-12下", desc: "掌心相對，針對肱肌與二頭肌外側，增加手臂寬度。", yt: "Hammer Curl form" },
+                { id: "d7_3", name: "仰臥臂屈伸 (Skull Crushers)", sets: "4組 x 10-12下", desc: "大臂微後傾保持張力，屈肘下放至額頭後方。", yt: "Skull Crushers form" },
+                { id: "d7_4", name: "過頭三頭伸展 (Overhead Ext.)", sets: "3組 x 12-15下", desc: "針對三頭肌長頭，增加手臂圍度關鍵。", yt: "Overhead Tricep Extension form" },
+                { id: "d7_5", name: "牧師椅彎舉 (Preacher Curls)", sets: "3組 x 12-15下", desc: "大臂完全固定在靠墊上，無法借力，孤立二頭短頭。", yt: "Preacher Curl form" },
+                { id: "d7_6", name: "滑輪下壓 (Cable Pushdowns)", sets: "3組 x 12-15下", desc: "最後收尾，追求力竭與極致充血。", yt: "Tricep Pushdown form" }
+            ]
+        }
+    };
+
+    let currentDay = 1;
+
+    // 初始化
+    function init() {
+        renderNav();
+        renderContent(1);
+    }
+
+    // 渲染導航列
+    function renderNav() {
+        const nav = document.getElementById('navContainer');
+        nav.innerHTML = '';
+        for (let i = 1; i <= 7; i++) {
+            const btn = document.createElement('button');
+            btn.className = `nav-btn ${i === 1 ? 'active' : ''}`;
+            btn.innerText = `Day ${i}`;
+            if (i === 4) {
+                btn.innerText = "Day 4 (休)";
+                btn.classList.add('rest-day');
+            }
+            btn.onclick = () => {
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderContent(i);
+            };
+            nav.appendChild(btn);
+        }
+    }
+
+    // 渲染內容
+    function renderContent(day) {
+        currentDay = day;
+        const container = document.getElementById('contentArea');
+        container.innerHTML = '';
+        const data = workoutData[day];
+
+        // 標題區
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'day-header-container';
+        const title = document.createElement('h2');
+        title.className = 'day-title';
+        title.innerText = data.title;
+        headerDiv.appendChild(title);
+        container.appendChild(headerDiv);
+
+        // 休息日處理
+        if (data.isRest) {
+            container.innerHTML += `
+                <div class="rest-display">
+                    <h2>🛌 休息日</h2>
+                    <p>肌肉是在休息時修復生長的。<br>建議進行輕度伸展、散步，並補充足夠蛋白質。</p>
+                </div>
+            `;
+            return;
+        }
+
+        // 動作卡片
+        data.exercises.forEach(ex => {
+            // 建立 YouTube 連結
+            const ytUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(ex.yt)}`;
+
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="header-info">
+                        <span class="ex-name">${ex.name}</span>
+                        <span class="ex-sets">${ex.sets}</span>
+                    </div>
+                    <a href="${ytUrl}" target="_blank" class="yt-btn">
+                        <span>📺</span>
+                        教學
+                    </a>
+                </div>
+                
+                <div class="card-body">
+                    <span class="desc-label">💡 注意重點：</span>
+                    <div class="desc-box">${ex.desc}</div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // 啟動
+    init();
+
+</script>
+</body>
+</html>
